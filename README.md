@@ -1,6 +1,3 @@
-CI_FUZZ     v.2017-Dec-24
-
-
 Description:
 
         This script fuzz's for Command Injection vulnerabilities resulting in remote command execution.
