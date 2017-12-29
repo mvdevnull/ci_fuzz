@@ -14,7 +14,7 @@ from mitmproxy import ctx    	#Logging to builtin events
 import json      		#For json manipulation
 import re			#For regex
 from time import sleep		#for delay between replays
-#import socket			#For sniffing icmp/detection
+import socket			#For sniffing icmp/detection
 #import binascii		#For sniffing and serialization
 
 ##############################################
