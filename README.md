@@ -48,10 +48,7 @@ Installation:
 
 Usage Examples:
 
-        *Set variables in the configuration section below
-                Change payload
-                Change any other variables in Configuration Section
-        *Optional - Import ~/.mitmproxy/mitmproxy-ca-cert.p12 Certificate into browser
+        *Set variables in the configuration section of ci_fuzz.py
 
         1)*Run mitmweb using the ci_fuzz.py script listening on localhost port 7777
                 mitmweb --listen-port 7777 --ssl-insecure -s ./ci_fuzz/ci_fuzz.py
