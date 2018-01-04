@@ -31,8 +31,8 @@ Prerequisites:
                 #Follow the "Development setup" here -> https://github.com/mitmproxy/mitmproxy (simliar to below)
                 apt-get install python3-venv
                 cd mitmproxy
-                ./dev.sh
-
+                ./dev.sh    #If error missing python.h headers - try apt-get install python3-dev
+		
                 #Confirm mitmproxy version 3.0.0+
                 . venv/bin/activate
                 (venv) root@kali:/usr/local/src/source-install/mitmproxy3# mitmproxy --version
