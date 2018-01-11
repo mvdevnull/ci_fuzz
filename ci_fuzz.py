@@ -30,7 +30,7 @@ skip_content = [{"dont_want_to_test": "true"}]   #Content to skip if matches BOD
 skip_keyword = "password"    #a keyword to skip fuzzing if BODY contains that keyword. useful for login/passwords,etc
 delay = .1 #set delay in seconds between replays (ie: .1 is 1/10 of a second between each new injection attempt)
 method_type = ["POST","PUT"]      #Set what HTTP methods are triggered (ie:  "POST", "PUT", etc..)
-host_allow = ["192.168.1.254","192.168.1.171","127.0.0.1"]  #Set what HOSTs we want to fuzz on (ip or hostname only)
+host_allow = ["192.168.1.173","192.168.1.171","127.0.0.1"]  #Set what HOSTs we want to fuzz on (ip or hostname only)
 target = socket.gethostbyname(socket.gethostname()) #Can be set to something else if preferred, but this script will not detect icmp)
 serial_int = 1   #starting serial number for tracking
 #END CONFIGURATION SECTION
@@ -95,7 +95,7 @@ def modify_json(webapp_content,flow):
           send_modified_dict_request(webapp_content_json,flow)
           webapp_content_json[(attribute)] = value
         if isinstance (value, (list, dict, bool, type(None), type(int))):    #Removed integer for now
-          ctx.log.error("TODO!!-MODIFY_DICT Complex JSON - the first json value is NOT a string - skipping->%s of type->%s. " % (webapp_content,type(value)))
+          ctx.log.error("TODO!!-MODIFY_DICT Complex JSON - the json value is NOT a string - skipping->%s of type->%s. " % (str(value),type(value)))
           pass
         else:
           #ctx.log.error("ERROR/BUG!! - in Modify_DICT this is a value the developer has never seen->%s of type %s." % (value, type(value)))
@@ -139,13 +139,20 @@ def check_body_type(webapp_content):
     elif re.match('.*\=.*.\&.*', str(webapp_content)):
       #ctx.log.error("BODY is STRING")
       body_type = "string"
-    elif re.match('XXXXXXXXXXXXXXXX', str(webapp_content)):  #Holder for any other string-type format to process
+    elif re.match('XXXXXXXXXXXXXXXX', str(webapp_content)):  #Holder for other string-type format to process
       #ctx.log.error("BODY is STRING")
       body_type = "string"
     else:
-      ctx.log.error("TODO- Unrecognized BODY->%s" % (webapp_content))
+      #ctx.log.error("TODO- Unrecognized BODY->%s" % (webapp_content))
       body_type = "unknown"
     return body_type
+'''
+    Other formats not captured by CI_FUZZ yet.
+    [{"index":0,"methodname":"core_message_get_unread_conversations_count","args":{"useridto":"2"}}]
+'''
+
+
+
 
 def check_whitelist(flow,method_type,host_allow,skip_content):
     proceed = False
@@ -183,7 +190,7 @@ def request(flow: http.HTTPFlow) -> None:
                 #ctx.log.error("DEBUG2.3-REQ-Continue-is string ->%s." % (webapp_content))
                 modify_string(webapp_content,flow)
             if body_type == "unknown":
-                ctx.log.error("DEBUG2.4-REQ-Stopping - unknown body format to CI_FUZZ")
+                ctx.log.error("TODO - Do not process *unknown* body format ->%s." % (webapp_content))
                 pass
             else:
                 pass
