@@ -1,5 +1,5 @@
 '''
-CI_FUZZ     v.2018-Jan-3
+CI_FUZZ     v.2018-Jan-17
    _____ _____    ______             
   / ____|_   _|  |  ____|            
  | |      | |    | |__ _   _ ________
@@ -15,6 +15,9 @@ import json      		#For json manipulation
 import re			#For regex
 from time import sleep		#for delay between replays
 import socket			#For sniffing icmp/detection
+import os			#For ensuring run within mitmproxy (for pid)
+import subprocess		#For ensuring run within mitmproxy (for process name)
+import sys			#For ensuring run within mitmproxy (to exit if incorrect)
 #import binascii		#For sniffing and serialization
 
 ##############################################
@@ -30,8 +33,8 @@ skip_content = [{"dont_want_to_test": "true"}]   #Content to skip if matches BOD
 skip_keyword = "password"    #a keyword to skip fuzzing if BODY contains that keyword. useful for login/passwords,etc
 delay = .1 #set delay in seconds between replays (ie: .1 is 1/10 of a second between each new injection attempt)
 method_type = ["POST","PUT"]      #Set what HTTP methods are triggered (ie:  "POST", "PUT", etc..)
-host_allow = ["192.168.1.173","192.168.1.171","127.0.0.1"]  #Set what HOSTs we want to fuzz on (ip or hostname only)
-target = socket.gethostbyname(socket.gethostname()) #Can be set to something else if preferred, but this script will not detect icmp)
+host_allow = ["192.168.1.171","127.0.0.1"]  #Set what HOSTs we want to fuzz on (ip or hostname only)
+target = ([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])    #function to get IP address but not 127.0.0.1.  Alternatively, mannually set target = "192.168.1.1"
 serial_int = 1   #starting serial number for tracking
 #END CONFIGURATION SECTION
 ##############################################
@@ -56,8 +59,14 @@ except KeyboardInterrupt:
     ctx.log.error("Closing")
 '''
 
-ctx.log.error("Starting CI_FUZZ......")
-ctx.log.error("Fuzzing on host->%s with HTTP-type(s) of->%s" % (host_allow,method_type))
+running_from = subprocess.run(['ps', '-p', str(os.getpid()) ], stdout=subprocess.PIPE)
+if re.match('.*mitm*.', str(running_from)):
+    ctx.log.error("Starting CI_FUZZ......")
+else:
+    print("usage error: ci_fuzz.py  MUST be run as a script for mitmweb(mitmproxy)")
+    print("Example usage ====> mitmweb --listen-port 7777 --ssl-insecure -s ./ci_fuzz/ci_fuzz.py")
+    sys.exit()
+ctx.log.error("Fuzzing on hosts->%s with HTTP-type(s) of->%s" % (host_allow,method_type))
 
 def modify_list(webapp_content,flow):    #BROKEN Function
     global serial_int #TODO  make sure this is properly "shared" between types
@@ -82,7 +91,7 @@ def modify_list(webapp_content,flow):    #BROKEN Function
 
 def modify_json(webapp_content,flow):
     global serial_int #TODO  make sure this is properly "shared" between types
-    webapp_content_json = json.loads(webapp_content)
+    webapp_content_json = json.loads(webapp_content.decode("utf-8"))
     #ctx.log.error("DEBUG5.0-MODIFY_DICT-CONTINUE-modifing dict")
     for attribute, value in webapp_content_json.items():
         #ctx.log.error("DEBUG5.1-MODIFY_DICT-Continue-")
